@@ -11,8 +11,8 @@ class DetectionType(models.Model):
         db_table = 'detection_types'
 
 class State(models.Model):
-    id   = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=45)
+    id              = models.AutoField(primary_key=True)
+    equipment_state = models.CharField(max_length=45)
 
     class Meta:
         db_table = 'states'
