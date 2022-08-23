@@ -47,7 +47,7 @@ def on_message(client, userdata, msg):
         # print(detection_type1)  # fetchone()해서 찍어보니 (1,)로 나와서 detection_type뒤에 , 찍어서 값만 할당!
 
         # state1 = State.objects.get(name = state)
-        mycursor.execute('SELECT id FROM states WHERE name=%s', (state,))
+        mycursor.execute('SELECT id FROM states WHERE equipment_state=%s', (state,))
         state1, = mycursor.fetchone()
         # print(state1)
 
@@ -58,10 +58,10 @@ def on_message(client, userdata, msg):
             equipment1, = mycursor.fetchone()
 
             sql = '''INSERT 
-                INTO detections (x,y,width,height,datetime,area_id,detection_type_id,state_id, equipment_id) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INTO detections (x,y,width,height,serial_number,datetime,area_id,detection_type_id,state_id, equipment_id) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 '''
-            val = (x,y,width,height,datetime1,cam_id, detection_type1, state1, equipment1)
+            val = (x,y,width,height,serial_number,datetime1,cam_id, detection_type1, state1, equipment1)
             mycursor.execute(sql,val)
 
             mydb.commit() # commit을 해줘야 DB에 실제로 입력이 됨

@@ -3,8 +3,6 @@ from django.db import models
 from areas.models      import Area
 # from detections.models import DetectionType
 
-
-
 class Equipment(models.Model):
     id            = models.AutoField(primary_key=True)
     image         = models.CharField(max_length=200)
