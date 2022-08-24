@@ -57,14 +57,14 @@ def on_message(client, userdata, msg):
             mycursor.execute('SELECT id FROM equipments WHERE serial_number=%s',(serial_number,))
             equipment1, = mycursor.fetchone()
 
-            sql = '''INSERT 
-                INTO detections (x,y,width,height,serial_number,datetime,area_id,detection_type_id,state_id, equipment_id) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                '''
-            val = (x,y,width,height,serial_number,datetime1,cam_id, detection_type1, state1, equipment1)
-            mycursor.execute(sql,val)
+        sql = '''INSERT 
+            INTO detections (x,y,width,height,serial_number,datetime,area_id,detection_type_id,state_id, equipment_id) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            '''
+        val = (x,y,width,height,serial_number,datetime1,cam_id, detection_type1, state1, equipment1)
+        mycursor.execute(sql,val)
 
-            mydb.commit() # commit을 해줘야 DB에 실제로 입력이 됨
+        mydb.commit() # commit을 해줘야 DB에 실제로 입력이 됨
 
     print('%s %s개의 데이터를 저장했습니다.' % (datetime1, detection_count))
 
