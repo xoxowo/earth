@@ -7,7 +7,7 @@ from django.views      import View
 from django.db.models  import Q
 from django.db.models import Avg, Min, Max, Count, F, Sum
 
-from .models import Detection, State, Equipment
+from detections.models import Detection, State, Area
 
 KST = timezone('Asia/Seoul')
 
@@ -40,33 +40,42 @@ class AnalysisView(View):
             return JsonResponse({'message': 'Query Parameter Error'}, status=400)
 
         detection_by_period = Detection.objects.filter(q)  
-        print('기간내 데이터:',detection_by_period.count(),'개','\n','쿼리셋:',detection_by_period)
+        # print('기간내 데이터:',detection_by_period.count(),'개','\n','쿼리셋:',detection_by_period)
 
          ##### 이제 시리얼 넘버로 #########
-        truck = detection_by_period.filter(detection_type__name = 'truck').values('serial_number').annotate(Count('serial_number'))
-        equips = detection_by_period.exclude(detection_type__name = 'truck').values('serial_number').annotate(count=Count('state'))
+        truck = detection_by_period.filter(detection_type__name = 'truck').values('area','serial_number').annotate(Count('serial_number'))
+        equips = detection_by_period.exclude(detection_type__name = 'truck').values('serial_number').annotate(Count('serial_number'))
+        equips_state = detection_by_period.exclude(detection_type__name = 'truck').values('serial_number', 'state').annotate(count=Count('state'))
 
-        # excavators   = detection_by_period.filter(detection_type__name = 'excavators')
-        # backhoe      = detection_by_period.filter(detection_type__name = 'backhoe')
-        # bulldozer    = detection_by_period.filter(detection_type__name = 'bulldozer')
-        # wheel_loader = detection_by_period.filter(detection_type__name = 'wheel_loader')
- 
-        truck_count        = truck.count()
+        results = {
+            'truck_count' : {
+                area.name : truck.filter(area_id=area.id).count() 
+                for area in Area.objects.all()
+                }
+            }
 
-        # excavators_state   = {state.state : excavators.filter(state__state=state.state).count()*10 for state in State.objects.all()}
-        # backhoe_state      = {state.state : backhoe.filter(state__state=state.state).count()*10 for state in State.objects.all()}
-        # bulldozer_state    = {state.state : bulldozer.filter(state__state=state.state).count()*10 for state in State.objects.all()}
-        # wheel_loader_state = {state.state : wheel_loader.filter(state__state=state.state).count()*10 for state in State.objects.all()}
         for equip in equips:
-            
+            results[equip['serial_number']] = {
+                state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
+                for state in State.objects.all()
+                }
+            serial_number = results[equip['serial_number']]
+            serial_number['utilization_rate'] = (serial_number['travel'] + serial_number['load'] + serial_number['unload']) /working_time
 
-        excavators_state['utilization_rate']   = (excavators_state['travel'] + excavators_state['load'] + excavators_state['unload']) /working_time
-        backhoe_state['utilization_rate']      = (backhoe_state['travel'] + backhoe_state['load'] + backhoe_state['unload']) / working_time
-        bulldozer_state['utilization_rate']    = (bulldozer_state['travel'] + bulldozer_state['load'] + bulldozer_state['unload']) / working_time
-        wheel_loader_state['utilization_rate'] = (wheel_loader_state['travel'] + wheel_loader_state['load'] + wheel_loader_state['unload']) / working_time
-
-        results = {'truck_count': truck_count, 'excavators_state': excavators_state, 'backhoe_state': backhoe_state, 'bulldozer_state': bulldozer_state, 'wheel_loader_state': wheel_loader_state}
-
+        # results = {
+        #     a: {
+        #         state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
+        #         for state in State.objects.all()
+        #         }
+        #     equip['serial_number']['utilization_rate'] = (equip['serial_number']['travel'] + equip['serial_number']['load'] + equip['serial_number']['unload']) /working_time
+        # for equip in equips
+        # }
+        
+        # results['truck_count'] = {
+        #     area.name : truck.filter(area_id=area.id).count()
+        # for area in Area.objects.all()
+        # }
+        
 
         return JsonResponse({'message': 'SUCCESS', 'results': results},  status=200)
   
