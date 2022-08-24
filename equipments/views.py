@@ -47,13 +47,13 @@ class AnalysisView(View):
         equips = detection_by_period.exclude(detection_type__name = 'truck').values('serial_number').annotate(Count('serial_number'))
         equips_state = detection_by_period.exclude(detection_type__name = 'truck').values('serial_number', 'state').annotate(count=Count('state'))
 
-        results = {
-            'truck_count' : {
-                area.name : truck.filter(area_id=area.id).count() 
-                for area in Area.objects.all()
-                }
+    
+        truck_count = {
+            area.name : truck.filter(area_id=area.id).count() 
+            for area in Area.objects.all()
             }
-
+            
+        results = {}
         for equip in equips:
             # results[equip['serial_number']] = {
             #     state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
@@ -92,13 +92,13 @@ class AnalysisView(View):
         #     'wheel_loader-003': results['wheel_loader-003']
         # }
 
-        dummy = randrange(3,6)
-        serial_name_list = ['truck_count', 'excavators1', 'backhoe2', 'bulldozer1', 'wheel_loader3']
+        dummy = randrange(2,5)
+        serial_name_list = ['excavators1', 'backhoe2', 'bulldozer1', 'wheel_loader3']
 
         results1 = {
             i : results[i]
             for i in serial_name_list[:dummy]
         }
         ##############################################################
-        return JsonResponse({'message': 'SUCCESS', 'results': results1},  status=200)
+        return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'results': results1},  status=200)
   
