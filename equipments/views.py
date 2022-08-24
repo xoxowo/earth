@@ -21,21 +21,24 @@ class AnalysisView(View):
 
         if select == 'daily' or not select:
             q = Q(datetime__date=today_datetime)
-
-            working_time = 8*60*60
+            
+            # working_time = 8*60*60
+            working_time = 8*60
 
         elif select == 'weekly':
             weekday      = today_datetime.weekday() # 0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일
             mon_datetime = today_datetime - timedelta(days=weekday)
             q            = Q(datetime__date__gte=mon_datetime)
 
-            working_time = 5* 8*60*60
+            # working_time = 5* 8*60*60
+            working_time = 5* 8*60
             
         elif select == 'monthly':
             month = today_datetime.month
             q     = Q(datetime__month=month)
 
-            working_time = 20 * 5 * 8*60*60
+            # working_time = 20 * 5 * 8*60*60
+            working_time = 20 * 5 * 8*60
 
         else :
             return JsonResponse({'message': 'Query Parameter Error'}, status=400)
@@ -121,3 +124,9 @@ class AnalysisView(View):
         ##############################################################
         return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'detection_count':detection_count, 'results': results1, 'utilization_rates': utilization_rates1},  status=200)
   
+
+
+  #### 실제 데이터로 변경되면 바꿀 것 
+  # 1. results1 -> results
+  # 2. utilization_rates1 -> utilization_rates
+  # 3. working_time
