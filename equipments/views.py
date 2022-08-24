@@ -46,45 +46,44 @@ class AnalysisView(View):
         detection_by_period = Detection.objects.filter(q)  
         # print('기간내 데이터:',detection_by_period.count(),'개','\n','쿼리셋:',detection_by_period)
 
-         ##### 이제 시리얼 넘버로 #########
         truck        = detection_by_period.filter(detection_type__name = 'truck').values('area','serial_number').annotate(Count('serial_number'))
         equips       = detection_by_period.exclude(detection_type__name = 'truck').values('serial_number').annotate(Count('serial_number'))
         equips_state = detection_by_period.exclude(detection_type__name = 'truck').values('serial_number', 'state').annotate(count=Count('state'))
 
         truck_count = {
-            area.name : truck.filter(area_id=area.id).count() 
+            area.name : truck.filter(area=area).count() 
             for area in Area.objects.all()
             }
             
-        results = {}
+        states = {}
         utilization_rates = {}
         for equip in equips:
-            # results[equip['serial_number']] = {
+            # states[equip['serial_number']] = {
             #     state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
             #     for state in State.objects.all()
             #     }
-            # serial_number = results[equip['serial_number']]
+            # serial_number = states[equip['serial_number']]
             # serial_number['utilization_rate'] = (serial_number['travel'] + serial_number['load'] + serial_number['unload']) /working_time
             # serial_number['serial_name'] = equip['serial_number'].split('-')[0] + equip['serial_number'].split('-')[1][-1:]
             serial_name = equip['serial_number'].split('-')[0] + equip['serial_number'].split('-')[1][-1:]
             equip_state = equips_state.filter(serial_number=equip['serial_number'])
-            results[serial_name] = {}
+            states[serial_name] = {}
             for state in State.objects.all():
-                # results[serial_name][state.equipment_state] = equip_state.filter(state=state)[0]['count']*10 if equip_state.filter(state=state).count() == 1 else 0
+                # states[serial_name][state.equipment_state] = equip_state.filter(state=state)[0]['count']*10 if equip_state.filter(state=state).count() == 1 else 0
                 try :
-                    results[serial_name][state.equipment_state] = equip_state.get(state=state)['count']*10 
+                    states[serial_name][state.equipment_state] = equip_state.get(state=state)['count']*10 
                 except Detection.DoesNotExist:
-                    results[serial_name][state.equipment_state] = 0
+                    states[serial_name][state.equipment_state] = 0
 
-            # results[serial_name] = {
+            # states[serial_name] = {
             #     # print(equips_state.filter(state_id=state.id, serial_number=equip['serial_number'])[0])
             #     state.equipment_state : equip_state.get(state_id=state.id).['count']*10 
             #     for state in State.objects.all()
             #     }
-            result = results[serial_name]
+            result = states[serial_name]
             # result['utilization_rate'] = (result['travel'] + result['load'] + result['unload']) /working_time
             utilization_rates[serial_name] = (result['travel'] + result['load'] + result['unload']) /working_time
-        # results = {
+        # states = {
         #     a: {
         #         state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
         #         for state in State.objects.all()
@@ -93,40 +92,33 @@ class AnalysisView(View):
         # for equip in equips
         # }
         
-        # results['truck_count'] = {
+        # states['truck_count'] = {
         #     area.name : truck.filter(area_id=area.id).count()
         # for area in Area.objects.all()
         # }
         
         ##################### 더미 데이터 테스트용 #######################
-        # results1 = {
-        #     'truck_count'     : results['truck_count'],
-        #     'excavators-001'  : results['excavators-001'],
-        #     'backhoe-002'     : results['backhoe-002'],
-        #     'bulldozer-001'   : results['bulldozer-001'],
-        #     'wheel_loader-003': results['wheel_loader-003']
-        # }
 
         dummy = randrange(2,5)
         serial_name_list = ['excavators1', 'backhoe2', 'bulldozer1', 'wheel_loader3']
 
-        results1 = {
-            i : results[i]
+        states = {
+            i : states[i]
             for i in serial_name_list[:dummy]
         }
-        utilization_rates1 = {
+        utilization_rates = {
             i : utilization_rates[i]
             for i in serial_name_list[:dummy]
         }
-        
-        detection_count = len(results1)
 
-        ##############################################################
-        return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'detection_count':detection_count, 'results': results1, 'utilization_rates': utilization_rates1},  status=200)
+        ##############################################################        
+        detection_count = len(states)
+        detection_list = list(states.keys())
+
+        return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'detection_list' : detection_list, 'detection_count': detection_count, 'states': states, 'utilization_rates': utilization_rates},  status=200)
   
 
 
   #### 실제 데이터로 변경되면 바꿀 것 
-  # 1. results1 -> results
-  # 2. utilization_rates1 -> utilization_rates
-  # 3. working_time
+  # 1. #### 상자 삭제
+  # 2. working_time 원복
