@@ -54,6 +54,7 @@ class AnalysisView(View):
             }
             
         results = {}
+        utilization_rates = {}
         for equip in equips:
             # results[equip['serial_number']] = {
             #     state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
@@ -64,7 +65,7 @@ class AnalysisView(View):
             # serial_number['serial_name'] = equip['serial_number'].split('-')[0] + equip['serial_number'].split('-')[1][-1:]
             serial_name = equip['serial_number'].split('-')[0] + equip['serial_number'].split('-')[1][-1:]
             equip_state = equips_state.filter(serial_number=equip['serial_number'])
-            results[serial_name]={}
+            results[serial_name] = {}
             for state in State.objects.all():
                 # results[serial_name][state.equipment_state] = equip_state.filter(state=state)[0]['count']*10 if equip_state.filter(state=state).count() == 1 else 0
                 try :
@@ -78,7 +79,8 @@ class AnalysisView(View):
             #     for state in State.objects.all()
             #     }
             result = results[serial_name]
-            result['utilization_rate'] = (result['travel'] + result['load'] + result['unload']) /working_time
+            # result['utilization_rate'] = (result['travel'] + result['load'] + result['unload']) /working_time
+            utilization_rates[serial_name] = (result['travel'] + result['load'] + result['unload']) /working_time
         # results = {
         #     a: {
         #         state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
@@ -109,6 +111,13 @@ class AnalysisView(View):
             i : results[i]
             for i in serial_name_list[:dummy]
         }
+        utilization_rates1 = {
+            i : utilization_rates[i]
+            for i in serial_name_list[:dummy]
+        }
+        
+        detection_count = len(results1)
+
         ##############################################################
-        return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'results': results1},  status=200)
+        return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'detection_count':detection_count, 'results': results1, 'utilization_rates': utilization_rates1},  status=200)
   
