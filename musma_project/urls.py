@@ -17,5 +17,5 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-
+    path('area', include('areas.urls')),
 ]
