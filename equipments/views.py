@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from django import views
 from pytz     import timezone, utc
+from random   import *
 
 from django.http       import JsonResponse
 from django.views      import View
@@ -55,13 +55,20 @@ class AnalysisView(View):
             }
 
         for equip in equips:
-            results[equip['serial_number']] = {
+            # results[equip['serial_number']] = {
+            #     state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
+            #     for state in State.objects.all()
+            #     }
+            # serial_number = results[equip['serial_number']]
+            # serial_number['utilization_rate'] = (serial_number['travel'] + serial_number['load'] + serial_number['unload']) /working_time
+            # serial_number['serial_name'] = equip['serial_number'].split('-')[0] + equip['serial_number'].split('-')[1][-1:]
+            serial_name = equip['serial_number'].split('-')[0] + equip['serial_number'].split('-')[1][-1:]
+            results[serial_name] = {
                 state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
                 for state in State.objects.all()
                 }
-            serial_number = results[equip['serial_number']]
+            serial_number = results[serial_name]
             serial_number['utilization_rate'] = (serial_number['travel'] + serial_number['load'] + serial_number['unload']) /working_time
-
         # results = {
         #     a: {
         #         state.equipment_state : equips_state.filter(state_id=state.id).count()*10 
@@ -76,6 +83,22 @@ class AnalysisView(View):
         # for area in Area.objects.all()
         # }
         
+        ##################### 더미 데이터 테스트용 #######################
+        # results1 = {
+        #     'truck_count'     : results['truck_count'],
+        #     'excavators-001'  : results['excavators-001'],
+        #     'backhoe-002'     : results['backhoe-002'],
+        #     'bulldozer-001'   : results['bulldozer-001'],
+        #     'wheel_loader-003': results['wheel_loader-003']
+        # }
 
-        return JsonResponse({'message': 'SUCCESS', 'results': results},  status=200)
+        dummy = randrange(3,6)
+        serial_name_list = ['truck_count', 'excavators1', 'backhoe2', 'bulldozer1', 'wheel_loader3']
+
+        results1 = {
+            i : results[i]
+            for i in serial_name_list[:dummy]
+        }
+        ##############################################################
+        return JsonResponse({'message': 'SUCCESS', 'results': results1},  status=200)
   
