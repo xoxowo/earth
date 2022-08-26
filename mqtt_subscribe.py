@@ -69,13 +69,13 @@ def on_message(client, userdata, msg):
             equipment1, = mycursor.fetchone()
 
         if serial_number == 'wheel_loader-000':   # 이걸로 가정
-            last = Detection.objects.filter(serial_number==serial_number).last()
+            last = Detection.objects.filter(serial_number=serial_number).last()
 
             last_x        = last.x        if last else 0
             last_progress = last.progress if last else 0
-
-            if last_x < x <= 200 :    ## 음... 200에 멈춰있으면..... last_x = x 이므로 false!!
-                progress = last_progress//10 + x/200*10
+            #### 도착 x좌표는 2000으로 가정하고 작성 ####
+            if last_x < x <= 2000 :    # 음... 200에 멈춰있으면..... last_x = x 이므로 false!!
+                progress = last_progress//10 *10 + x/2000*10
             else: 
                 progress = last_progress
         else :
