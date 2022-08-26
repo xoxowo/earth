@@ -1,6 +1,3 @@
-from django.shortcuts import render
-
-# Create your views here.
 from pytz     import timezone, utc
 
 from django.http       import JsonResponse
@@ -34,8 +31,7 @@ class AreaDetailView(View):
             'latitude' : area.latitude,
             'longitude' : area.longitude,
             'cam_latitude' : area.cam_latitude,
-            'cam_longitude' : area.cam_longitude,
-            '공정률': 'progress~~~~~~~~'
+            'cam_longitude' : area.cam_longitude
         }
 
 
