@@ -23,6 +23,7 @@ class Detection(models.Model):
     y              = models.IntegerField()
     width          = models.IntegerField()
     height         = models.IntegerField()
+    progress       = models.IntegerField(null=True)
     serial_number  = models.CharField(max_length=45)
     datetime       = models.DateTimeField()
     area           = models.ForeignKey(Area, on_delete=models.CASCADE, related_name='detection')
