@@ -55,3 +55,57 @@ class EquipmonetListView(View):
 
         except KeyError:
             return JsonResponse({'message':'Key_Error'}, status=400)
+
+class EquipmentDetailView(View):
+    def get(self, request, equipment_id):
+        try:
+            now          = timezone.now()
+            weekday      = now.weekday() 
+            mon_datetime = now - datetime.timedelta(days=weekday) 
+            equipment    = Equipment.objects.get(id=equipment_id)
+            rate         = Detection.objects.select_related('equipment_id').filter(equipment_id=equipment_id, datetime__date__gte=mon_datetime)
+
+            mon = rate.filter(datetime__iso_week_day=DayEnum.MON.value).exclude(state_id=StatuesEnum.IDEL.value).count()
+            tue = rate.filter(datetime__iso_week_day=DayEnum.TUE.value).exclude(state_id=StatuesEnum.IDEL.value).count()
+            wed = rate.filter(datetime__iso_week_day=DayEnum.WED.value).exclude(state_id=StatuesEnum.IDEL.value).count()
+            thu = rate.filter(datetime__iso_week_day=DayEnum.THU.value).exclude(state_id=StatuesEnum.IDEL.value).count()
+            fri = rate.filter(datetime__iso_week_day=DayEnum.FRI.value).exclude(state_id=StatuesEnum.IDEL.value).count()
+            sat = rate.filter(datetime__iso_week_day=DayEnum.SAT.value).exclude(state_id=StatuesEnum.IDEL.value).count()
+
+            calculation = lambda x : round((x*10/28800)*100)
+
+            results= { 
+                'equipment_type' : equipment.type.name,
+                'serial_number'  : equipment.serial_number,
+                'company'        : equipment.company,
+                'equipment_area' : equipment.area.name,
+            }
+  
+            availablete_rating = [
+                {
+                    'date': '월',
+                    'rate': calculation(mon)},
+                {
+                    'date': '화',
+                    'rate': calculation(tue)},
+                {
+                    'date': '수',
+                    'rate': calculation(wed)},
+                {
+                    'date': '목',
+                    'rate': calculation(thu)},
+                {
+                    'date': '금',
+                    'rate': calculation(fri)},
+                {
+                    'date': '토',
+                    'rate': calculation(sat)},
+            ]
+
+            return JsonResponse({'message':results,'availablete_rating':availablete_rating}, status=200)
+
+        except Equipment.DoesNotExist:
+            return JsonResponse({'message':'Invalid_Equipment'}, status=404)
+
+        except KeyError:
+            return JsonResponse({'message':'Key_Error'}, status=400)
