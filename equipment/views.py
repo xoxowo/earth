@@ -2,9 +2,9 @@ import datetime
 import json
 import random
 
-from django.utils import timezone
-from django.views import View
-from django.http  import JsonResponse
+from django.utils      import timezone
+from django.views      import View
+from django.http       import JsonResponse
 from django.db.models  import Q, Count
 
 from core.emunutils   import StatuesEnum, DayEnum
@@ -19,9 +19,8 @@ class EquipmonetListView(View):
             sort_type = request.GET.get('sort_by', 'all')
 
             sort_options = {
-                'all'           : 'serial_number',
-                'equipment'     : 'type__name',
-                'owner'         : 'owner_id',
+                'all'      : 'serial_number',
+                'equipment': 'type__name',
             }
 
             equipments = Equipment.objects.select_related('type').filter(type__name__in=type, area__name__in=area)
