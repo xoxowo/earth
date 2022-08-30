@@ -1,7 +1,6 @@
-from django.urls import path
-
-from detection.views import RealTimeView
+from django.urls import path, include
 
 urlpatterns = [
-    path('', RealTimeView.as_view())
+    path('', include('detection.urls')),
+    path('equipment', include('equipment.urls')),
 ]

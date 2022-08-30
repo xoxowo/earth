@@ -401,3 +401,5 @@ zsdoc/data
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm,visualstudiocode,vim,macos,linux,zsh
 
 my_settings.py
+
+mqtt_subscribe.py
