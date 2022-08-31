@@ -7,6 +7,7 @@ from django.views      import View
 
 from detection.models import Detection
 from area.models      import Area
+from core.utils       import DayEnum
 
 
 class RealTimeView(View):
@@ -52,26 +53,32 @@ class ProgressView(View):
         else:
             if select == 'weekly':
                 weekday  = today.weekday() # 0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일
-                dates    = [today - datetime.timedelta(days=weekday-i) for i in range(7)]
+                mon_datetime = today - datetime.timedelta(days=weekday)
+                dates    = [mon_datetime + datetime.timedelta(days=Weekday.value) for Weekday in DayEnum]
 
             elif select == 'monthly':
-                dates = [today.replace(day=i) for i in range(1, calendar.monthrange(today.year,today.month)[1]+1)]
+                last_date = calendar.monthrange(today.year,today.month)[1]
+                dates = [today.replace(day=date) for date in range(1, last_date+1)]
             else:
                 return JsonResponse({'message': 'Query Parameter Error'}, status=400)
             
-            results = []
-            for i in range(len(dates)) :
-                results.append({'day': dates[i].day})
+            results = {}
+            for area in Area.objects.all()[:2]:
+                results[area.name] = []
+                for date in dates:
 
-                for area in Area.objects.all()[:2]:
-                    if dates[i].weekday() == 6:  # 일요일은 토요일 공정률과 동일한 값으로
-                        date1 = dates[i]-datetime.timedelta(days=1)
+                    if date.weekday() == DayEnum.SUN.value: 
+                        date1 = date-datetime.timedelta(days=1)
                     else :
-                        date1 = dates[i]
+                        date1 = date
 
                     progress_date_area    = progress_detection.filter(datetime__date=date1, area=area)
-                    results[i][area.name] = progress_date_area.last().progress\
-                                                if  progress_date_area\
-                                                else '없음'
+
+                    results[area.name].append({
+                    'day'     : date.day,
+                    'progress': progress_date_area.last().progress\
+                                    if  progress_date_area\
+                                    else '없음'
+                    })
 
         return JsonResponse({'message': 'SUCCESS', 'results': results}, status=200)
