@@ -62,12 +62,13 @@ def on_message(client, userdata, msg):
             equipment1, = mycursor.fetchone()
 
         PROGRESS_DETECTION = 'wheel_loader-000' # 이걸로 가정
+        START_POINT = 0  # 시작 x좌표는 0으로 가정
         TURNING_POINT = 2000  # 도착 x좌표는 2000으로 가정
 
         if serial_number == PROGRESS_DETECTION:  
             last          = Detection.objects.filter(serial_number=serial_number).last()
-            last_x        = last.x        if last else 0
-            last_progress = last.progress if last else 0
+            last_x        = last.x        if last else START_POINT
+            last_progress = last.progress if last and last.progress else 0
 
             if last_x < x <= TURNING_POINT :    # 음... 2000에 멈춰있으면..... last_x = x 이므로 false!!
                 progress = last_progress//10 *10 + x/TURNING_POINT*10
@@ -87,7 +88,7 @@ def on_message(client, userdata, msg):
            
     print('\n >>> %s %s개의 데이터를 저장했습니다.' % (datetime1, detection_count))
 
-client = mqtt.Client(client_id="wecode-melony2222") # client_id는 생략 가능
+client = mqtt.Client(client_id="") # client_id는 생략 가능
 client.on_connect = on_connect
 client.on_message = on_message  # subscribe 메세지가 들어오면 작동하는 Method
 
