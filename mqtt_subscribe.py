@@ -61,7 +61,7 @@ def on_message(client, userdata, msg):
             mycursor.execute('SELECT id FROM equipment WHERE serial_number=%s',(serial_number,))
             equipment1, = mycursor.fetchone()
 
-        PROGRESS_DETECTION = 'wheel_loader-000' # 이걸로 가정
+        PROGRESS_DETECTION = 'wheel_loader_000' # 이걸로 가정
         START_POINT = 0  # 시작 x좌표는 0으로 가정
         TURNING_POINT = 2000  # 도착 x좌표는 2000으로 가정
 
@@ -98,13 +98,13 @@ mqtt_endpoint = 'mqtt-dsmepbs.cauto.musma.net'
 client.tls_set(ca_certs=ca_file, certfile=cert_file, keyfile=key_file, cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
 client.tls_insecure_set(True)
 
-# client.loop_start()
+client.loop_start()
 client.connect(mqtt_endpoint, 7001)
-# time.sleep(5)
+time.sleep(5)
 
 client.subscribe('dsmepbs/wecode') # wecode topic subscribe
-# while True:
-#     a = 1
+while True:
+    a = 1
 
-client.loop_forever()
+# client.loop_forever()
 

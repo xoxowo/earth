@@ -1,6 +1,7 @@
 import datetime
 import json
 import random
+import math
 
 from django.utils      import timezone
 from django.views      import View
@@ -73,7 +74,7 @@ class EquipmentDetailView(View):
             fri = rate.filter(datetime__iso_week_day=DayEnum.FRI.value).exclude(state_id=StatuesEnum.IDEL.value).count()
             sat = rate.filter(datetime__iso_week_day=DayEnum.SAT.value).exclude(state_id=StatuesEnum.IDEL.value).count()
 
-            calculation = lambda x : round((x*10/28800)*100)
+            calculation = lambda x : math.ceil((x*10/28800)*100)
 
             results= { 
                 'equipment_type' : equipment.type.name,
