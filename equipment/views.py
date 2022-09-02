@@ -186,7 +186,7 @@ class AnalysisView(View):
                 working_time = calculate_working_time(today, select)
 
             else : 
-                return JsonResponse({'message': 'Query Parameter Error'}, status=400)
+                return JsonResponse({'message': 'Value_Error'}, status=404)
 
             detection_by_period = Detection.objects.filter(q).values('serial_number','area','state')
 
@@ -217,7 +217,7 @@ class AnalysisView(View):
                 utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) /working_time
 
         except KeyError:
-            return JsonResponse({'message': 'Key Error'}, status=400)     
+            return JsonResponse({'message': 'Key_Error'}, status=400)     
 
         return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'states': states, 'utilization_rates': utilization_rates},  status=200)
 
