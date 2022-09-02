@@ -6,10 +6,11 @@ from django.utils      import timezone
 from django.views      import View
 from django.db.models  import Q
 
+from core.utils       import PROGRESS_DETECTION
 from core.emunutils   import DayEnum
 from detection.models import Detection
 from area.models      import Area
-from mqtt_subscribe   import on_message
+
 
 class RealTimeView(View):
     def get(self, request):
@@ -41,7 +42,7 @@ class ProgressView(View):
 
         today = timezone.now() 
 
-        progress_detection = Detection.objects.filter(serial_number=on_message.PROGRESS_DETECTION)
+        progress_detection = Detection.objects.filter(serial_number=PROGRESS_DETECTION)
 
         q = Q()
         if area_id:

@@ -34,3 +34,14 @@ def calculate_working_time(today, select):
             working_time += WEEKDAY_WORKING_TIME
 
     return working_time
+
+
+PROGRESS_DETECTION = 'wheel_loader_000' # 이걸로 가정
+START_X            = 200                # 작업구역 시작 x좌표
+TURNING_X          = 1080               # 작업구역 끝 x좌표
+PROGRESS_PER_ONE   = 20/20              # y축 방향 편도 1회당 공정률(%) = x축 방향 왕복 1회 공정률(%) / y축 방향 총 편도 반복횟수
+                    ## 여기서 x축 방향 왕복 1회 공정률이 20 미만으로 떨어지면, progress가 정수로 모델링 되어 있어서 코드 수정 필요함
+START_Y            = 120                # 작업구역 시작 y좌표
+TURNING_Y          = 620                # 작업구역 끝 y좌표
+INITIAL_PROGRESS   = 0                  # 작업 중간부터 detect 시작했을 경우 초기 공정률값 설정 가능
+ERROR_RANGE        = 30

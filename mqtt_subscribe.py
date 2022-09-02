@@ -82,7 +82,8 @@ def on_message(client, userdata, msg):
             TURNING_Y          = 620                # 작업구역 끝 y좌표
             INITIAL_PROGRESS   = 0                  # 작업 중간부터 detect 시작했을 경우 초기 공정률값 설정 가능
             ERROR_RANGE        = 30
-            
+            ### 상수값들 core/utils.py 에 저장해두고 불러오는게 더 좋으려나?
+
             if serial_number == PROGRESS_DETECTION:  
                 last   = Detection.objects.filter(serial_number=PROGRESS_DETECTION).last()
                 if START_X <= x <= TURNING_X:
@@ -102,9 +103,10 @@ def on_message(client, userdata, msg):
                         progress = last_progress
                 else:
                     progress = last.progress if last and last.progress else INITIAL_PROGRESS
+                print('######## 공정률: %s, y값: %s' %(progress,y)) 
             else :
                 progress = None                
-            print('######## 공정률: %s, y값: %s' %(progress,y)) 
+            
             sql = '''INSERT 
                 INTO detection (x,y,width,height,serial_number,datetime,area_id,detection_type_id,state_id, equipment_id, progress) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
