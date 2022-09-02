@@ -6,7 +6,7 @@ from area.models      import Area
 from detection.models import DetectionType
 from equipment.models import Equipment
 
-class EquipmonetViewTest(TestCase):
+class EquipmentViewTest(TestCase):
     def setUp(self):
         client = Client()
 
