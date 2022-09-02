@@ -35,7 +35,6 @@ class EquipmonetListView(View):
             }for equipment in equipments.order_by(sort_options[sort_type])]
 
             return JsonResponse({'message':results}, status=200)
-
         except KeyError:
             return JsonResponse({'message':'Key_Error'}, status=400)
 
@@ -46,15 +45,26 @@ class EquipmonetListView(View):
             serial_number     = data['serial_number']
             equipment_company = data['equipment_company']
             equipment_area    = data['equipment_area']
-
+            # 1안 : 장비 타입과 구역명은 프론트에서 셀렉트박스로 선택 하는 방식
             Equipment.objects.create(
                 type_id       = equipment_type,
                 serial_number = serial_number,
                 company       = equipment_company,
                 area_id       = equipment_area
             )
-            return JsonResponse({'message':'Success'}, status=200)
-
+            # 2안 : 사용자가 직접 장비 타입 ('backhoe')과 구역 명을 입력할 경우 
+            # equipment = DetectionType.objects.get(name=equipment_type)
+            # area = Area.objects.get(name=equipment_area)
+            
+            # Equipment.objects.create(
+            #     type_id       = equipment.id,
+            #     serial_number = serial_number,
+            #     company       = equipment_company,
+            #     area_id       = area.id
+            # )
+            return JsonResponse({'message':'Success'}, status=201)
+        except ValueError:
+            return JsonResponse({'message':'Value_Error'}, status=400)
         except KeyError:
             return JsonResponse({'message':'Key_Error'}, status=400)
 
@@ -65,7 +75,8 @@ class EquipmentDetailView(View):
             weekday      = now.weekday() 
             mon_datetime = now - datetime.timedelta(days=weekday) 
             equipment    = Equipment.objects.get(id=equipment_id)
-            rate         = Detection.objects.select_related('equipment_id').filter(equipment_id=equipment_id, datetime__date__gte=mon_datetime)
+            rate         = Detection.objects.select_related('equipment_id') \
+                            .filter(equipment_id=equipment_id, datetime__date__gte=mon_datetime)
 
             mon = rate.filter(datetime__iso_week_day=DayEnum.MON.value).exclude(state_id=StatuesEnum.IDEL.value).count()
             tue = rate.filter(datetime__iso_week_day=DayEnum.TUE.value).exclude(state_id=StatuesEnum.IDEL.value).count()
@@ -105,6 +116,45 @@ class EquipmentDetailView(View):
             ]
 
             return JsonResponse({'message':results,'availablete_rating':availablete_rating}, status=200)
+
+        except Equipment.DoesNotExist:
+            return JsonResponse({'message':'Invalid_Equipment'}, status=404)
+
+        except KeyError:
+            return JsonResponse({'message':'Key_Error'}, status=400)
+
+    def patch(self, request, equipment_id):
+        try:
+            data = json.loads(request.body)
+            equipment = Equipment.objects.get(id=equipment_id)
+
+            equipment.type_id       = data['equipment_type']
+            equipment.serial_number = data['serial_number']
+            equipment.company       = data['equipment_company']
+            equipment.area_id       = data['equipment_area']
+
+            equipment.save()
+
+            return JsonResponse({'message':'Success'}, status=200)
+
+        except ValueError:
+            return JsonResponse({'message':'Value_Error'}, status=400)
+
+        except Equipment.DoesNotExist:
+            return JsonResponse({'message':'Invalid_Equipment'}, status=404)
+
+        except KeyError:
+            return JsonResponse({'message':'Key_Error'}, status=400)
+
+    def delete(self, request, equipment_id):
+        try:
+            equipment = Equipment.objects.get(id=equipment_id)
+
+            if not Equipment.objects.filter(id=equipment_id).exists():
+                return JsonResponse({'message':'Dose_Not_Exist'}, status = 404)
+
+            equipment.delete()
+            return JsonResponse({'message':'No_Content'}, status=204)
 
         except Equipment.DoesNotExist:
             return JsonResponse({'message':'Invalid_Equipment'}, status=404)
