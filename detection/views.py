@@ -1,10 +1,10 @@
 import datetime
 import calendar 
 
-from django.http       import JsonResponse
-from django.utils      import timezone
-from django.views      import View
-from django.db.models  import Q
+from django.http      import JsonResponse
+from django.utils     import timezone
+from django.views     import View
+from django.db.models import Q
 
 from core.utils       import PROGRESS_DETECTION
 from core.emunutils   import DayEnum
@@ -39,15 +39,15 @@ class ProgressView(View):
     def get(self, request):
         try:
             select  = request.GET.get('select')
-            area_id = request.GET.get('area')
+            area_name = request.GET.get('area_name')
 
             today = timezone.now() 
 
             progress_detection = Detection.objects.filter(serial_number=PROGRESS_DETECTION)
 
             q = Q()
-            if area_id:
-                q &= Q(id=area_id)
+            if area_name:
+                q &= Q(name=area_name)
 
             if select == 'realtime':
                 results =[]
@@ -96,5 +96,5 @@ class ProgressView(View):
 
             return JsonResponse({'message': 'SUCCESS', 'results': results}, status=200)
 
-        except KeyError:
-            JsonResponse({'message':'Key_Error'}, status=400)
+        except Exception as e:
+            print('예외 발생:', e)
