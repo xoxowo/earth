@@ -39,15 +39,15 @@ class ProgressView(View):
     def get(self, request):
         try:
             select  = request.GET.get('select')
-            area_name = request.GET.get('area_name')
+            area_id = request.GET.get('area')
 
-            today = timezone.now() 
+            today = timezone.now().date()
 
             progress_detection = Detection.objects.filter(serial_number=PROGRESS_DETECTION)
 
             q = Q()
-            if area_name:
-                q &= Q(name=area_name)
+            if area_id:
+                q &= Q(id=area_id)
 
             if select == 'realtime':
                 results =[]
@@ -77,21 +77,27 @@ class ProgressView(View):
 
                 results = {}
                 for area in areas:
+                    progress_area =  progress_detection.filter(area=area)
+                    start_date = progress_area.first().datetime.date() if progress_area else None
+                    
                     results[area.name] = []
                     for date in dates:
-
-                        if date.isoweekday() == DayEnum.SUN.value: 
-                            progress_date = date-datetime.timedelta(days=1)
-                        else :
-                            progress_date = date
-
-                        progress_date_area    = progress_detection.filter(datetime__date=progress_date, area=area)
+                        if not start_date: 
+                            progress = '없음'
+                        else:     
+                            progress_date_area = progress_area.filter(datetime__date=date)
+                            if progress_date_area:
+                                progress = progress_date_area.last().progress
+                            elif start_date < date <= today :  
+                                progress = progress_area.filter(datetime__date__lt=date).last().progress
+                            elif date < start_date:  # date = start_date에는 progress_date_area.last().progress가 없을 수 없음
+                                progress = 0
+                            else: # today < date
+                                progress = '없음'
 
                         results[area.name].append({
                             'day'     : date.day,
-                            'progress': progress_date_area.last().progress\
-                                            if  progress_date_area\
-                                            else '없음'
+                            'progress': progress
                         })
 
             return JsonResponse({'message': 'SUCCESS', 'results': results}, status=200)
