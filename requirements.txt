@@ -4,3 +4,5 @@ mysqlclient==2.1.1
 PyMySQL==1.0.2
 pytimekr==0.1.0
 pandas==1.4.4
+paho-mqtt==1.6.1
+mysql-connector-python==8.0.30
