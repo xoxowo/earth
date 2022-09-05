@@ -93,9 +93,9 @@ class AreaListView(View):
             print('예외 발생:', e)            
 
 class AreaDetailView(View): 
-    def get(self, request, area_name):
+    def get(self, request, area_id):
         try:
-            area = Area.objects.get(name=area_name)
+            area = Area.objects.get(id=area_id)
 
             results = {
                 'area_id'      : area.id,
