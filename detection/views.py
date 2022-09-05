@@ -1,10 +1,10 @@
 import datetime
 import calendar 
 
-from django.http       import JsonResponse
-from django.utils      import timezone
-from django.views      import View
-from django.db.models  import Q
+from django.http      import JsonResponse
+from django.utils     import timezone
+from django.views     import View
+from django.db.models import Q
 
 from core.utils       import PROGRESS_DETECTION
 from core.emunutils   import DayEnum
@@ -41,7 +41,7 @@ class ProgressView(View):
             select  = request.GET.get('select')
             area_id = request.GET.get('area')
 
-            today = timezone.now() 
+            today = timezone.now().date()
 
             progress_detection = Detection.objects.filter(serial_number=PROGRESS_DETECTION)
 
@@ -77,24 +77,30 @@ class ProgressView(View):
 
                 results = {}
                 for area in areas:
+                    progress_area =  progress_detection.filter(area=area)
+                    start_date = progress_area.first().datetime.date() if progress_area else None
+                    
                     results[area.name] = []
                     for date in dates:
-
-                        if date.isoweekday() == DayEnum.SUN.value: 
-                            progress_date = date-datetime.timedelta(days=1)
-                        else :
-                            progress_date = date
-
-                        progress_date_area    = progress_detection.filter(datetime__date=progress_date, area=area)
+                        if not start_date: 
+                            progress = '없음'
+                        else:     
+                            progress_date_area = progress_area.filter(datetime__date=date)
+                            if progress_date_area:
+                                progress = progress_date_area.last().progress
+                            elif start_date < date <= today :  
+                                progress = progress_area.filter(datetime__date__lt=date).last().progress
+                            elif date < start_date:  # date = start_date에는 progress_date_area.last().progress가 없을 수 없음
+                                progress = 0
+                            else: # today < date
+                                progress = '없음'
 
                         results[area.name].append({
                             'day'     : date.day,
-                            'progress': progress_date_area.last().progress\
-                                            if  progress_date_area\
-                                            else '없음'
+                            'progress': progress
                         })
 
             return JsonResponse({'message': 'SUCCESS', 'results': results}, status=200)
 
-        except KeyError:
-            JsonResponse({'message':'Key_Error'}, status=400)
+        except Exception as e:
+            print('예외 발생:', e)
