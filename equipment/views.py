@@ -16,7 +16,7 @@ class EquipmonetListView(View):
     def get(self, request):
         try:
             type      = request.GET.getlist('type', ['excavators', 'backhoe', 'bulldozer', 'wheel_loader'])
-            area      = request.GET.getlist('area', ['구역A', '구역B'])
+            area      = request.GET.getlist('area_id', [1, 2])
             sort_type = request.GET.get('sort_by', 'all')
 
             sort_options = {
@@ -24,7 +24,7 @@ class EquipmonetListView(View):
                 'equipment': 'type__name',
             }
 
-            equipments = Equipment.objects.select_related('type').filter(type__name__in=type, area__name__in=area)
+            equipments = Equipment.objects.select_related('type').filter(type__name__in=type, area__id__in=area)
 
             results = [{
                 'equipment_id'     : equipment.id,
@@ -35,6 +35,8 @@ class EquipmonetListView(View):
             }for equipment in equipments.order_by(sort_options[sort_type])]
 
             return JsonResponse({'message':results}, status=200)
+        except ValueError:
+            return JsonResponse({'message':'Value_Error'}, status=400)    
         except KeyError:
             return JsonResponse({'message':'Key_Error'}, status=400)
 
