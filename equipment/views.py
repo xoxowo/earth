@@ -166,7 +166,7 @@ class EquipmentDetailView(View):
 class AnalysisView(View):
     def get(self, request):       
         try: 
-            select  = request.GET['select']
+            select  = request.GET.get('select')
 
             today = timezone.now()  # 장고 timezon.now는 settings.py 참고해서 local time을 반환 가능
 
@@ -186,7 +186,7 @@ class AnalysisView(View):
                 working_time = calculate_working_time(today, select)
 
             else : 
-                return JsonResponse({'message': 'Value_Error'}, status=404)
+                return JsonResponse({'message': 'Select_Value_Error'}, status=404)
 
             detection_by_period = Detection.objects.filter(q).values('serial_number','area','state')
 
@@ -216,8 +216,9 @@ class AnalysisView(View):
                 result = states[equip['serial_number']]
                 utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) /working_time
 
-        except KeyError:
-            return JsonResponse({'message': 'Key_Error'}, status=400)     
-
-        return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'states': states, 'utilization_rates': utilization_rates},  status=200)
+            return JsonResponse({'message': 'SUCCESS', \
+                                 'truck_count': truck_count, 'states': states, 'utilization_rates': utilization_rates},  \
+                                  status=200)
+        except Exception as e:
+            print('예외 발생:', e)        
 
