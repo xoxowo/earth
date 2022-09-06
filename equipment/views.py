@@ -226,8 +226,12 @@ class AnalysisView(View):
                 }    
                 result = states[equip['serial_number']]
                 # utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) /working_time
-                utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) \
-                                                            / (result['travel'] + result['load'] + result['unload'] + result['idle'])
+                working_time = result['travel'] + result['load'] + result['unload'] + result['idle']
+                if working_time:
+                    utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) / working_time
+                else:
+                    utilization_rates[equip['serial_number']] = 0
+                    
             return JsonResponse({'message': 'SUCCESS', \
                                  'truck_count': truck_count, 'states': states, 'utilization_rates': utilization_rates},  \
                                   status=200)
