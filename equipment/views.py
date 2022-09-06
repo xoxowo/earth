@@ -15,8 +15,8 @@ from equipment.models import Equipment
 class EquipmonetListView(View):
     def get(self, request):
         try:
-            type      = request.GET.getlist('type', ['excavators', 'backhoe', 'bulldozer', 'wheel_loader'])
-            area      = request.GET.getlist('area_id', [1, 2])
+            type      = request.GET.getlist('type')
+            area      = request.GET.getlist('area')
             sort_type = request.GET.get('sort_by', 'all')
 
             sort_options = {
@@ -24,8 +24,17 @@ class EquipmonetListView(View):
                 'equipment': 'type__name',
             }
 
-            equipments = Equipment.objects.select_related('type').filter(type__name__in=type, area__id__in=area)
+            q = Q()            
+            if type:
+                q &= Q(type__name__in=type)   
+            if area:
+                q &= Q(area__id__in=area)
 
+            if not type or not area :
+                return JsonResponse({'message':'Invalid_Equipment'}, status=404)
+
+            equipments = Equipment.objects.filter(q)
+                                                                 
             results = [{
                 'equipment_id'     : equipment.id,
                 'equipment_type'   : equipment.type.name,
