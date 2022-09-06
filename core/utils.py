@@ -88,7 +88,7 @@ def save_data_in_MYSQL(data):
             ### 상수값들 core/utils.py 에 저장해두고 불러오는게 더 좋으려나?
 
             if serial_number == PROGRESS_DETECTION:  
-                last   = Detection.objects.filter(serial_number=PROGRESS_DETECTION).last()
+                last   = Detection.objects.filter(serial_number=PROGRESS_DETECTION, area_id=cam_id).last()
                 if START_X <= x <= TURNING_X:
                     last_y        = last.y  if last  else START_Y  # 첫 감지 시 last_y를 START_POINT로 설정하여 작업구역 도착 전 이동은 예외처리 가능
                     last_progress = last.progress if last and last.progress else INITIAL_PROGRESS
