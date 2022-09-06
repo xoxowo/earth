@@ -30,9 +30,6 @@ class EquipmonetListView(View):
             if area:
                 q &= Q(area__id__in=area)
 
-            if not type or not area :
-                return JsonResponse({'message':'Invalid_Equipment'}, status=404)
-
             equipments = Equipment.objects.filter(q)
                                                                  
             results = [{
