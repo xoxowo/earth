@@ -15,8 +15,8 @@ from equipment.models import Equipment
 class EquipmonetListView(View):
     def get(self, request):
         try:
-            type      = request.GET.getlist('type', ['excavators', 'backhoe', 'bulldozer', 'wheel_loader'])
-            area      = request.GET.getlist('area_id', [1, 2])
+            type      = request.GET.getlist('type')
+            area      = request.GET.getlist('area')
             sort_type = request.GET.get('sort_by', 'all')
 
             sort_options = {
@@ -24,8 +24,17 @@ class EquipmonetListView(View):
                 'equipment': 'type__name',
             }
 
-            equipments = Equipment.objects.select_related('type').filter(type__name__in=type, area__id__in=area)
+            q = Q()            
+            if type:
+                q &= Q(type__name__in=type)   
+            if area:
+                q &= Q(area__id__in=area)
 
+            if not type or not area :
+                return JsonResponse({'message':'Invalid_Equipment'}, status=404)
+
+            equipments = Equipment.objects.filter(q)
+                                                                 
             results = [{
                 'equipment_id'     : equipment.id,
                 'equipment_type'   : equipment.type.name,
@@ -168,7 +177,7 @@ class EquipmentDetailView(View):
 class AnalysisView(View):
     def get(self, request):       
         try: 
-            select  = request.GET['select']
+            select  = request.GET.get('select')
 
             today = timezone.now()  # 장고 timezon.now는 settings.py 참고해서 local time을 반환 가능
 
@@ -188,7 +197,7 @@ class AnalysisView(View):
                 working_time = calculate_working_time(today, select)
 
             else : 
-                return JsonResponse({'message': 'Value_Error'}, status=404)
+                return JsonResponse({'message': 'Select_Value_Error'}, status=404)
 
             detection_by_period = Detection.objects.filter(q).values('serial_number','area','state')
 
@@ -218,8 +227,9 @@ class AnalysisView(View):
                 result = states[equip['serial_number']]
                 utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) /working_time
 
-        except KeyError:
-            return JsonResponse({'message': 'Key_Error'}, status=400)     
-
-        return JsonResponse({'message': 'SUCCESS', 'truck_count': truck_count, 'states': states, 'utilization_rates': utilization_rates},  status=200)
+            return JsonResponse({'message': 'SUCCESS', \
+                                 'truck_count': truck_count, 'states': states, 'utilization_rates': utilization_rates},  \
+                                  status=200)
+        except Exception as e:
+            print('예외 발생:', e)        
 
