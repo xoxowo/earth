@@ -222,8 +222,9 @@ class AnalysisView(View):
                     for state in State.objects.all()
                 }    
                 result = states[equip['serial_number']]
-                utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) /working_time
-
+                # utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) /working_time
+                utilization_rates[equip['serial_number']] = (result['travel'] + result['load'] + result['unload']) \
+                                                            / (result['travel'] + result['load'] + result['unload'] + result['idle'])
             return JsonResponse({'message': 'SUCCESS', \
                                  'truck_count': truck_count, 'states': states, 'utilization_rates': utilization_rates},  \
                                   status=200)
