@@ -31,6 +31,9 @@ class EquipmonetListView(View):
                 q &= Q(area__id__in=area)
 
             equipments = Equipment.objects.filter(q)
+
+            if not equipments:
+              return JsonResponse({'message':'Dose_Not_Exist'}, status=404)
                                                                  
             results = [{
                 'equipment_id'     : equipment.id,
